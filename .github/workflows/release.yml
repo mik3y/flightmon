@@ -17,7 +17,7 @@ jobs:
         with:
           platforms: "linux/amd64, linux/arm, darwin/amd64"
           name: "flightmon"
-          compress: "false"
+          compress: "true"
           dest: "dist"
       - name: Upload build-artifacts
         uses: skx/github-action-publish-binaries@master
