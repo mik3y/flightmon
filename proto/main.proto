@@ -1,0 +1,68 @@
+syntax = "proto2";
+package proto;
+option go_package = "github.com/mik3y/flightmon/proto";
+
+// A parsed SBS1 message.
+message SBS1Message {
+    enum MessageType {
+        UNKNOWN = 0;
+        SELECTION_CHANGE = 1; // "SEL"
+        NEW_ID = 2; // "ID"
+        NEW_AIRCRAFT = 3; // "AIR"
+        STATUS_AIRCRAFT = 4; // "STA"
+        CLICK = 5; // "CLK"
+        TRANSMISSION = 6; // "MSG"
+    }
+
+    enum TransmissionType {
+        RESERVED = 0; // Not used
+        ES_IDENT_AND_CATEGORY = 1; // ES identification and category
+        ES_SURFACE_POS = 2; // ES surface position message
+        ES_AIRBORNE_POS = 3; // ES airborne position message
+        ES_AIRBORNE_VEL = 4; // ES airborne velocity message
+        SURVEILLANCE_ALT = 5; // Surveillance alt message
+        SURVEILLANCE_ID = 6; // Surveillance ID message
+        AIR_TO_AIR = 7; // Air-to-air message
+        ALL_CALL_REPLY = 8; // All call reply
+    }
+
+    required MessageType message_type = 1;
+    required TransmissionType transmission_type = 2;
+
+    optional string session_id = 3;
+    optional string aircraft_id = 4;
+    optional string hex_ident = 5;
+    optional string flight_id = 6;
+    optional string generated_date = 7;
+    optional string generated_time = 8;
+    optional string logged_date = 9;
+    optional string logged_time = 10;
+    optional string callsign = 11;
+
+    optional int32 altitude = 12;
+    optional int32 ground_speed = 13;
+    optional int32 track = 14;
+    optional float lat = 15;
+    optional float lng = 16;
+    optional int32 vertical_rate = 17;
+    optional string squawk = 18;
+
+    optional bool alert = 19;
+    optional bool emergency = 20;
+    optional bool spi = 21;
+    optional bool is_on_ground = 22;
+}
+
+// A summarized "full telemetry" message.
+message PositionUpdate {
+    required string icao_id = 1;
+    required int64 timestamp = 2;
+    optional string callsign = 3;
+    optional float lat = 4;
+    optional float lng = 5;
+    optional int32 altitude = 6;
+    optional int32 ground_speed = 7;
+    optional int32 track = 8;
+    optional int32 vertical_rate = 9;
+    optional string squawk = 10;
+}
