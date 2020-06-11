@@ -14,6 +14,10 @@ import (
 var updatedTextColor = tcell.ColorWhite
 var normalTextColor = tcell.ColorGray
 
+func getHeaderText(cache *lru.Cache) string {
+	return fmt.Sprintf("Flightmon v%s · %d tracked", Version, cache.Len())
+}
+
 func updateRow(table *tview.Table, row int, positionData *pb.PositionUpdate) {
 	var cell *tview.TableCell
 	colNum := 0
@@ -132,7 +136,7 @@ func updateTable(cache *lru.Cache, table *tview.Table, header *tview.TextView) {
 		updateRow(table, rowNum, positionData)
 	}
 
-	header.SetText(fmt.Sprintf("Flightmon · %d tracked", table.GetRowCount()-1))
+	header.SetText(getHeaderText(cache))
 }
 
 // ShowUI shows a curses-like GUI in the terminal.
@@ -140,7 +144,8 @@ func ShowUI(cache *lru.Cache, donec chan<- struct{}) {
 	app := tview.NewApplication()
 
 	header := tview.NewTextView().
-		SetText("Flightmon").SetTextColor(tcell.ColorGreen)
+		SetText(getHeaderText(cache)).
+		SetTextColor(tcell.ColorGreen)
 
 	table := tview.NewTable().
 		SetBorders(true)
