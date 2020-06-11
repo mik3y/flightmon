@@ -2,6 +2,8 @@
 
 A command-line "GUI" for watching ADS-B output from a dump1090 daemon.
 
+![Screenshot of Flightmon in action](https://user-images.githubusercontent.com/390829/84444664-48db3080-ac10-11ea-994c-3910e9f382fd.png)
+
 ## Usage
 
 ```
