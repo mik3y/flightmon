@@ -13,7 +13,7 @@ import (
 	logging "github.com/ipfs/go-log"
 )
 
-var Version = "0.1.0"
+var Version = "0.1.1"
 
 var dumpHost = flag.String("dump_host", "localhost:30003", "dump1090 SBS1 stream address (required)")
 var debug = flag.Bool("debug", false, "Enable debug output")
