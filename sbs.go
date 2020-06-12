@@ -10,6 +10,7 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	lru "github.com/hashicorp/golang-lru"
+	"github.com/jpillora/backoff"
 	pb "github.com/mik3y/flightmon/proto"
 )
 
@@ -45,11 +46,10 @@ func nilableString(s string) *string {
 	return &trimmed
 }
 
-func processMessage(message string, trackedCache *lru.Cache, updates chan<- *pb.PositionUpdate) {
+func processMessage(message string, trackedCache *lru.Cache, updates chan<- *pb.PositionUpdate) error {
 	msg, err := parseMessage(message)
 	if err != nil {
-		logger.Warning(err)
-		return
+		return err
 	}
 
 	changed := false
@@ -123,6 +123,8 @@ func processMessage(message string, trackedCache *lru.Cache, updates chan<- *pb.
 	} else {
 		trackedCache.Add(ident, record)
 	}
+
+	return nil
 }
 
 func parseMessage(message string) (*pb.SBS1Message, error) {
@@ -216,21 +218,44 @@ func parseMessage(message string) (*pb.SBS1Message, error) {
 }
 
 func startSbsTracking(trackedCache *lru.Cache, updates chan<- *pb.PositionUpdate) {
-	if *dumpHost != "" {
+	if *dumpHost == "" {
+		logger.Debug("No dump host specified, no updates will be posted")
+		return
+	}
+
+	b := &backoff.Backoff{
+		Min:    500 * time.Millisecond,
+		Max:    10 * time.Second,
+		Factor: 2,
+		Jitter: false,
+	}
+
+	for {
 		logger.Infof("Connecting to %s", *dumpHost)
 
 		c, err := net.Dial("tcp", *dumpHost)
 		if err != nil {
-			fmt.Println(err)
-			return
+			logger.Errorf("Error connecting to %s: %v", *dumpHost, err)
+			sleepAmount := b.Duration()
+			logger.Errorf("Retrying in %s", sleepAmount)
+			time.Sleep(sleepAmount)
+			continue
 		}
+		defer c.Close()
 
 		reader := bufio.NewReader(c)
+		b.Reset()
+
 		for {
-			message, _ := reader.ReadString('\n')
-			processMessage(message, trackedCache, updates)
+			message, err := reader.ReadString('\n')
 			if err != nil {
-				logger.Warning(err)
+				logger.Errorf("Error reading from host: %s", err)
+				break
+			}
+			err = processMessage(message, trackedCache, updates)
+			if err != nil {
+				logger.Errorf("Error processing message: %s", err)
+				break
 			}
 		}
 	}
