@@ -7,7 +7,7 @@ import (
 
 	"github.com/gdamore/tcell"
 	lru "github.com/hashicorp/golang-lru"
-	pb "github.com/mik3y/flightmon/proto"
+	pb "github.com/mik3y/goadsb/proto"
 	"github.com/rivo/tview"
 )
 

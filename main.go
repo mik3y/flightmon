@@ -8,12 +8,13 @@ import (
 	"time"
 
 	lru "github.com/hashicorp/golang-lru"
-	pb "github.com/mik3y/flightmon/proto"
+	adsb "github.com/mik3y/goadsb"
+	pb "github.com/mik3y/goadsb/proto"
 
 	logging "github.com/ipfs/go-log"
 )
 
-var Version = "0.1.1"
+var Version = "0.1.2"
 
 var dumpHost = flag.String("dump_host", "localhost:30003", "dump1090 SBS1 stream address (required)")
 var debug = flag.Bool("debug", false, "Enable debug output")
@@ -63,7 +64,7 @@ func main() {
 	}
 
 	updates := make(chan *pb.PositionUpdate, 10)
-	go startSbsTracking(trackedCache, updates)
+	go adsb.StartSbsTracking(*dumpHost, logger.SugaredLogger, trackedCache, updates)
 	go startAging(trackedCache)
 
 	stop := make(chan os.Signal, 1)
